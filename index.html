@@ -6,12 +6,12 @@
 <title>My LP Wishlist</title>
 <style>
   :root{
-    --bg:#121110; --panel:#1b1917; --line:#2e2a26; --text:#f1ebe3; --muted:#9a9187;
+    --bg:#121110; --panel:#1b1917; --panel2:#26221e; --line:#2e2a26; --text:#f1ebe3; --muted:#9a9187;
     --accent:#e8a33d; --ok:#6fbf73;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-  header{position:sticky;top:0;z-index:10;background:rgba(18,17,16,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  header{position:sticky;top:0;z-index:30;background:rgba(18,17,16,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
   .bar{max-width:1280px;margin:0 auto;padding:14px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
   h1{font-size:20px;margin:0;letter-spacing:.3px}
   h1 span{color:var(--accent)}
@@ -19,25 +19,52 @@
   nav button{background:none;border:1px solid var(--line);color:var(--muted);padding:8px 14px;border-radius:999px;cursor:pointer;font:inherit}
   nav button.on{background:var(--accent);border-color:var(--accent);color:#1a1205;font-weight:600}
   main{max-width:1280px;margin:0 auto;padding:22px 20px 80px}
-  form.search{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+  form.search{display:flex;gap:10px;margin-bottom:8px}
+  .searchwrap{position:relative;flex:1;min-width:0}
   input[type=search],select{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:12px 14px;border-radius:10px;font:inherit}
-  input[type=search]{flex:1 1 320px;min-width:0}
+  input[type=search]{width:100%}
+  input[type=search]:focus{outline:none;border-color:var(--accent)}
   button.primary{background:var(--accent);color:#1a1205;border:0;padding:12px 20px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer}
-  .hint,.status{color:var(--muted);font-size:14px;margin:6px 0 18px}
+  .status{color:var(--muted);font-size:14px;margin:6px 0 10px;min-height:20px}
+
+  /* suggestions dropdown */
+  .dd{position:absolute;left:0;right:0;top:calc(100% + 6px);background:var(--panel);border:1px solid var(--line);border-radius:12px;
+      box-shadow:0 14px 40px rgba(0,0,0,.55);max-height:72vh;overflow:auto;z-index:25;padding:6px}
+  .dd h3{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:10px 10px 4px;font-weight:600}
+  .dd .msg{padding:12px 10px;color:var(--muted);font-size:14px}
+  .opt{display:flex;gap:12px;align-items:center;padding:7px 10px;border-radius:8px;cursor:pointer}
+  .opt.on,.opt:hover{background:var(--panel2)}
+  .thumb{width:46px;height:46px;border-radius:6px;background:var(--panel2);flex:none;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+  .thumb img{width:100%;height:100%;object-fit:cover}
+  .thumb.artist{border-radius:50%;font-weight:700;font-size:18px;color:var(--accent);background:#2c241a}
+  .opt .t{font-weight:600}
+  .opt .s{font-size:13px;color:var(--muted)}
+
+  /* results */
+  h2.sec{font-size:18px;margin:26px 0 12px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  h2.sec small{color:var(--muted);font-weight:400;font-size:14px}
+  .linkbtn{background:none;border:0;color:var(--accent);font:inherit;font-size:14px;cursor:pointer;padding:0}
+  .chips{display:flex;gap:10px;flex-wrap:wrap}
+  .chip{display:flex;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 16px 6px 6px;cursor:pointer;color:var(--text);font:inherit;text-align:left}
+  .chip:hover{border-color:var(--accent)}
+  .chip .thumb{width:34px;height:34px;font-size:14px}
+  .chip small{display:block;color:var(--muted);font-size:12px}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:22px}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
-  .cover{position:relative;aspect-ratio:1/1;background:#26221e}
+  .card.hl{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+  .cover{position:relative;aspect-ratio:1/1;background:var(--panel2)}
   .cover img{position:relative;z-index:1;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .3s}
-  .cover img.loaded{opacity:1}
-  .badge{z-index:2}
+  .cover img.loaded,.thumb img.loaded{opacity:1}
+  .thumb img{opacity:0;transition:opacity .3s}
   .ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:16px;color:var(--muted);
       background:radial-gradient(circle at 50% 50%,#111 0 16%,#2a2622 17% 18%,#161412 19% 40%,#221f1b 41% 42%,#161412 43%)}
   .ph b{color:var(--text);font-size:14px;background:rgba(0,0,0,.6);padding:2px 8px;border-radius:6px;margin-top:6px}
   .bought .cover img{filter:grayscale(.85) brightness(.7)}
-  .badge{position:absolute;top:10px;left:10px;background:var(--ok);color:#06200a;font-weight:700;font-size:12px;padding:4px 10px;border-radius:999px}
+  .badge{position:absolute;z-index:2;top:10px;left:10px;background:var(--ok);color:#06200a;font-weight:700;font-size:12px;padding:4px 10px;border-radius:999px}
   .info{padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
   .title{font-weight:650;font-size:16px;line-height:1.25}
-  .artist{color:var(--accent)}
+  .artist{color:var(--accent);background:none;border:0;padding:0;font:inherit;text-align:left;cursor:pointer}
+  .artist:hover{text-decoration:underline}
   .meta{color:var(--muted);font-size:13px}
   .actions{margin-top:auto;display:flex;gap:8px;flex-wrap:wrap;padding-top:8px}
   .btn{background:none;border:1px solid var(--line);color:var(--text);padding:7px 11px;border-radius:8px;cursor:pointer;font:inherit;font-size:14px}
@@ -49,11 +76,23 @@
   details.buy summary{cursor:pointer;list-style:none;display:inline-block}
   details.buy summary::-webkit-details-marker{display:none}
   details.buy .links{display:flex;flex-direction:column;gap:2px;margin-top:8px}
-  details.buy a{color:var(--text);text-decoration:none;padding:7px 10px;border-radius:8px;background:#26221e;font-size:14px}
+  details.buy a{color:var(--text);text-decoration:none;padding:7px 10px;border-radius:8px;background:var(--panel2);font-size:14px}
   details.buy a:hover{background:#322d27;color:var(--accent)}
+  details.tracks{width:100%}
+  details.tracks summary{cursor:pointer;list-style:none;display:inline-block}
+  details.tracks summary::-webkit-details-marker{display:none}
+  .tl{margin-top:8px;font-size:14px;color:var(--muted)}
+  .tl ol{list-style:none;margin:0 0 6px;padding:0}
+  .tl li{display:flex;gap:8px;padding:4px 2px;border-bottom:1px solid var(--line);color:var(--text)}
+  .tl .n{color:var(--muted);min-width:24px;font-variant-numeric:tabular-nums}
+  .tl .tt{flex:1}
+  .tl .len{color:var(--muted);font-variant-numeric:tabular-nums}
+  .tlhead{font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin:10px 0 4px;color:var(--accent)}
+  .tlnote{font-size:12px;margin-top:6px}
+  .tlnote a{color:var(--muted)}
   .tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
   .tools .sp{flex:1}
-  .empty{color:var(--muted);text-align:center;padding:60px 0}
+  .empty{color:var(--muted);text-align:center;padding:60px 0;grid-column:1/-1}
   footer{color:var(--muted);font-size:12px;text-align:center;padding:30px 20px}
   footer a{color:var(--muted)}
 </style>
@@ -71,23 +110,16 @@
 
 <main>
   <section id="view-search">
-    <form class="search" id="form">
-      <input type="search" id="q" placeholder="Album or band, e.g. Radiohead or OK Computer" autocomplete="off" autofocus>
-      <select id="by" title="Search in">
-        <option value="both">Album + band</option>
-        <option value="album">Album name</option>
-        <option value="artist">Band / artist</option>
-      </select>
-      <select id="type" title="Release type">
-        <option value="studio">Studio albums</option>
-        <option value="album">All albums (+ live, compilations)</option>
-        <option value="ep">EPs</option>
-        <option value="all">Everything</option>
-      </select>
+    <form class="search" id="form" autocomplete="off">
+      <div class="searchwrap">
+        <input type="search" id="q" placeholder="Search a band or an album — e.g. Muse, Absolution" autofocus
+               role="combobox" aria-expanded="false" aria-controls="dd">
+        <div class="dd" id="dd" role="listbox" hidden></div>
+      </div>
       <button class="primary" type="submit">Search</button>
     </form>
-    <div class="status" id="status">Data from MusicBrainz, covers from the Cover Art Archive. Press Enter to search.</div>
-    <div class="grid" id="results"></div>
+    <div class="status" id="status">Start typing — suggestions appear after a short pause. Data from MusicBrainz, covers from the Cover Art Archive.</div>
+    <div id="results"></div>
   </section>
 
   <section id="view-list" hidden>
@@ -121,7 +153,8 @@
 (() => {
   /* ---------- Shops: edit this list to add or remove stores ----------
      "site" shops use a Google "site:" search, which works without knowing the shop's own search URL.
-     "url" shops use the store's own search page; {q} is replaced with the encoded query. */
+     "url" shops use the store's own search page; {q} is replaced with the encoded query.
+     "plain: true" leaves "LP" out of the query. */
   const SHOPS = [
     { name: "Gramodesky.cz",  site: "gramodesky.cz" },
     { name: "Musicrecords.cz", site: "musicrecords.cz" },
@@ -132,38 +165,124 @@
 
   const KEY = "lp-wishlist-v1";
   const $ = s => document.querySelector(s);
+  const enc = encodeURIComponent;
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-  /* ---------- state ---------- */
+  /* ---------- wishlist state ---------- */
   let wishlist = [];
   try { wishlist = JSON.parse(localStorage.getItem(KEY)) || []; } catch { wishlist = []; }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(wishlist)); } catch {} updateCount(); };
   const find = id => wishlist.find(x => x.id === id);
-  let lastResults = [];
-
   function updateCount() {
     const n = wishlist.filter(x => !x.bought).length;
     $("#count").textContent = n ? `(${n})` : "";
   }
 
-  /* ---------- helpers ---------- */
-  const coverUrl = id => `https://coverartarchive.org/release-group/${id}/front-500`;
+  /* ---------- MusicBrainz access ----------
+     MusicBrainz allows ~1 request/second and answers 503 when over it or when busy.
+     All requests go through one queue, spaced 1.1 s apart, with retries on 503.
+     Results are cached so going back to an artist or query is instant. */
+  const MB = "https://musicbrainz.org/ws/2/";
+  const cache = new Map();
+  let queue = Promise.resolve(), lastCall = 0;
+
+  class Stale extends Error {}
+
+  function mb(path, { isStale = () => false, onWait = () => {} } = {}) {
+    if (cache.has(path)) return Promise.resolve(cache.get(path));
+    const run = async () => {
+      const waits = [0, 1500, 3000, 6000];
+      for (let i = 0; i < waits.length; i++) {
+        if (isStale()) throw new Stale();
+        if (waits[i]) { onWait(`MusicBrainz is busy, retrying in ${waits[i] / 1000}s…`); await sleep(waits[i]); }
+        const gap = Date.now() - lastCall;
+        if (gap < 1100) await sleep(1100 - gap);
+        if (isStale()) throw new Stale();
+        lastCall = Date.now();
+        let res;
+        try { res = await fetch(MB + path); }
+        catch { throw new Error("Couldn't reach MusicBrainz. Check your internet connection."); }
+        if (res.status === 503 || res.status === 429) continue;
+        if (!res.ok) throw new Error("MusicBrainz error " + res.status);
+        const data = await res.json();
+        cache.set(path, data);
+        return data;
+      }
+      throw new Error("MusicBrainz is still busy after several tries. Give it a minute and try again.");
+    };
+    const p = queue.then(run, run);
+    queue = p.catch(() => {});
+    return p;
+  }
+
+  const rgSearch = (query, opts) => mb(`release-group/?fmt=json&limit=100&query=${enc(query)}`, opts)
+    .then(d => d["release-groups"] || []);
+
+  const luceneEscape = s => s.replace(/([+\-&|!(){}\[\]^"~*?:\\\/])/g, "\\$1").trim();
+  const norm = s => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/^the\s+/, "").replace(/[^a-z0-9]+/g, " ").trim();
+
+  function toItem(rg) {
+    const credits = rg["artist-credit"] || [];
+    const sec = rg["secondary-types"] || [];
+    return {
+      id: rg.id,
+      title: rg.title,
+      artist: credits.map(a => (a.name || a.artist?.name || "") + (a.joinphrase || "")).join("").trim() || "Unknown artist",
+      artistId: credits[0]?.artist?.id || "",
+      year: (rg["first-release-date"] || "").slice(0, 4),
+      type: [rg["primary-type"], ...sec].filter(Boolean).join(" + "),
+      studio: rg["primary-type"] === "Album" && !sec.length,
+      editions: rg.count || 0,
+    };
+  }
+  // Popularity proxy: number of editions/pressings/reissues. Studio albums get a boost over live/compilations.
+  const weight = it => it.editions * (it.studio ? 1 : 0.4);
+  const byWeight = (a, b) => weight(b) - weight(a) || (a.year || "9999").localeCompare(b.year || "9999");
+
+  /* One request answers both "which albums" and "which artists": albums whose title OR artist matches,
+     then artists are collected from those albums' credits and ranked by their total editions. */
+  async function searchAll(text, opts) {
+    const t = luceneEscape(text);
+    const groups = await rgSearch(`(releasegroup:(${t}) OR artist:(${t})) AND primarytype:album`, opts);
+    const albums = groups.map(toItem).sort(byWeight);
+    const nt = norm(text), artists = new Map();
+    for (const rg of groups) for (const c of rg["artist-credit"] || []) {
+      const a = c.artist; if (!a) continue;
+      const na = norm(a.name);
+      if (!na || !(na === nt || na.includes(nt) || (na.length >= 3 && nt.includes(na)))) continue;
+      const e = artists.get(a.id) || { id: a.id, name: a.name, dis: a.disambiguation || "", editions: 0, exact: na === nt };
+      e.editions += rg.count || 0;
+      artists.set(a.id, e);
+    }
+    const artistList = [...artists.values()].sort((a, b) => (b.exact - a.exact) || (b.editions - a.editions));
+    // Artists first when the query is clearly a band name (exact match that outweighs the top album)
+    const artistsFirst = !!(artistList[0] && artistList[0].exact && artistList[0].editions >= (albums[0]?.editions || 0));
+    return { albums, artists: artistList, artistsFirst };
+  }
+
+  /* ---------- shared bits ---------- */
+  const coverUrl = (id, size = 500) => `https://coverartarchive.org/release-group/${id}/front-${size}`;
+  const artistsById = new Map();   // for clicks on artist chips/links
+  const itemsById = new Map();     // for "+ Wishlist" on any shown album
+  const remember = items => items.forEach(i => itemsById.set(i.id, i));
 
   function buyLinks(item) {
     const query = `${item.artist} ${item.title}`;
     return SHOPS.map(s => {
-      let href;
-      if (s.site) href = `https://www.google.com/search?q=${encodeURIComponent(`site:${s.site} ${query} LP`)}`;
-      else href = s.url.replace("{q}", encodeURIComponent(s.plain ? query : `${query} LP`));
+      const href = s.site
+        ? `https://www.google.com/search?q=${enc(`site:${s.site} ${query} LP`)}`
+        : s.url.replace("{q}", enc(s.plain ? query : `${query} LP`));
       return `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(s.name)} ↗</a>`;
     }).join("");
   }
 
-  function cardHTML(item, mode) {
+  function cardHTML(item, mode, highlight) {
     const inList = find(item.id);
     const bought = inList && inList.bought;
     const meta = [item.year, item.type, item.editions > 1 ? `${item.editions} editions` : ""].filter(Boolean).join(" · ");
-    let actions = "";
+    let actions;
     if (mode === "search") {
       actions = inList
         ? `<button class="btn done" disabled>✓ In wishlist</button>`
@@ -175,8 +294,14 @@
       actions += `<button class="btn danger" data-act="remove" title="Remove">✕</button>`;
     }
     const buy = bought ? "" : `<details class="buy"><summary class="btn">Where to buy ▾</summary><div class="links">${buyLinks(item)}</div></details>`;
+    const tl = openTracks.has(item.id);
+    const tracks = `<details class="tracks" data-rg="${esc(item.id)}"${tl ? " open" : ""}><summary class="btn">Tracklist ▾</summary>
+      <div class="tl">${tl && trackCache.has(item.id) ? trackCache.get(item.id) : "Loading…"}</div></details>`;
+    const artist = item.artistId
+      ? `<button class="artist" data-artist="${esc(item.artistId)}" data-name="${esc(item.artist)}">${esc(item.artist)}</button>`
+      : `<div class="artist">${esc(item.artist)}</div>`;
     return `
-      <article class="card ${bought ? "bought" : ""}" data-id="${esc(item.id)}">
+      <article class="card ${bought ? "bought" : ""} ${highlight ? "hl" : ""}" data-id="${esc(item.id)}">
         <div class="cover">
           <div class="ph">💿<b>${esc(item.artist)}</b><b>${esc(item.title)}</b></div>
           <img src="${coverUrl(item.id)}" alt="${esc(item.artist)} – ${esc(item.title)}" loading="lazy">
@@ -184,95 +309,226 @@
         </div>
         <div class="info">
           <div class="title">${esc(item.title)}</div>
-          <div class="artist">${esc(item.artist)}</div>
+          ${artist}
           <div class="meta">${esc(meta)}</div>
-          <div class="actions">${actions}${buy}</div>
+          <div class="actions">${actions}${tracks}${buy}</div>
         </div>
       </article>`;
   }
 
-  // Fade the cover in once loaded; remove it if it doesn't exist (placeholder shows through)
+  /* ---------- tracklist (loaded when the roll-down is opened) ----------
+     Tracks belong to a specific release (edition), so we fetch up to 25 releases of the album
+     and pick: official vinyl first, then any official release, then the earliest. */
+  const trackCache = new Map(), openTracks = new Set();
+  const fmtLen = ms => ms ? `${Math.floor(ms / 60000)}:${String(Math.round(ms / 1000) % 60).padStart(2, "0")}` : "";
+
+  function pickRelease(releases) {
+    const isVinyl = r => (r.media || []).some(m => /vinyl/i.test(m.format || ""));
+    const score = r => (r.status === "Official" ? 2 : 0) + (isVinyl(r) ? 1 : 0);
+    return [...releases].sort((a, b) => score(b) - score(a) || (a.date || "9999").localeCompare(b.date || "9999"))[0];
+  }
+
+  function tracklistHTML(rel) {
+    if (!rel) return `<div class="tlnote">No tracklist in MusicBrainz yet.</div>`;
+    const media = rel.media || [];
+    const body = media.map((m, i) => `
+      ${media.length > 1 || m.format ? `<div class="tlhead">${media.length > 1 ? `Disc ${i + 1} · ` : ""}${esc(m.format || "")}</div>` : ""}
+      <ol>${(m.tracks || []).map(t => `<li><span class="n">${esc(t.number || t.position)}</span><span class="tt">${esc(t.title)}</span><span class="len">${fmtLen(t.length)}</span></li>`).join("")}</ol>`).join("");
+    const from = [rel.date?.slice(0, 4), rel.country, rel.disambiguation].filter(Boolean).join(" · ");
+    return body + `<div class="tlnote">From the ${esc(from || "listed")} edition · <a href="https://musicbrainz.org/release/${esc(rel.id)}" target="_blank" rel="noopener">details ↗</a></div>`;
+  }
+
+  // "toggle" doesn't bubble, so listen in the capture phase
+  document.addEventListener("toggle", async e => {
+    const d = e.target;
+    if (!d.matches || !d.matches("details.tracks")) return;
+    const id = d.dataset.rg, box = d.querySelector(".tl");
+    if (!d.open) { openTracks.delete(id); return; }
+    openTracks.add(id);
+    if (trackCache.has(id)) { box.innerHTML = trackCache.get(id); return; }
+    box.textContent = "Loading…";
+    try {
+      const data = await mb(`release?release-group=${id}&inc=recordings+media&fmt=json&limit=25`,
+        { onWait: m => { box.textContent = m; } });
+      const html = tracklistHTML(pickRelease(data.releases || []));
+      trackCache.set(id, html);
+      document.querySelectorAll(`details.tracks[data-rg="${id}"] .tl`).forEach(el => { el.innerHTML = html; });
+    } catch (err) {
+      box.textContent = "⚠ " + err.message;
+    }
+  }, true);
+
+  const initial = name => esc((name.replace(/^the\s+/i, "")[0] || "?").toUpperCase());
+
+  // Fade images in once loaded; remove broken ones so the placeholder shows
   document.addEventListener("load", e => {
-    if (e.target.tagName === "IMG" && e.target.closest(".cover")) e.target.classList.add("loaded");
+    if (e.target.tagName === "IMG" && e.target.closest(".cover,.thumb")) e.target.classList.add("loaded");
   }, true);
   document.addEventListener("error", e => {
-    if (e.target.tagName === "IMG" && e.target.closest(".cover")) e.target.remove();
+    if (e.target.tagName === "IMG" && e.target.closest(".cover,.thumb")) e.target.remove();
   }, true);
 
-  /* ---------- search (MusicBrainz) ---------- */
-  const luceneEscape = s => s.replace(/([+\-&|!(){}\[\]^"~*?:\\\/])/g, "\\$1").trim();
+  /* ---------- results area: list of sections ---------- */
+  let current = null;   // { sections, highlight } — re-rendered after adding to wishlist
+  const statusEl = $("#status");
+  const setStatus = t => { statusEl.textContent = t; };
 
-  function buildQuery(text, by, type) {
-    const t = luceneEscape(text);
-    let core;
-    if (by === "album") core = `releasegroup:(${t})`;
-    else if (by === "artist") core = `artist:(${t})`;
-    else core = `(releasegroup:(${t}) OR artist:(${t}))`;
-    if (type === "album" || type === "studio") core += " AND primarytype:album";
-    if (type === "ep") core += " AND primarytype:ep";
-    return core;
+  function render() {
+    if (!current) { $("#results").innerHTML = ""; return; }
+    $("#results").innerHTML = current.sections.map(s => {
+      const head = `<h2 class="sec">${esc(s.title)}${s.sub ? ` <small>${esc(s.sub)}</small>` : ""}${s.extra || ""}</h2>`;
+      if (s.artists) return head + `<div class="chips">${s.artists.map(a => `
+        <button class="chip" data-artist="${esc(a.id)}" data-name="${esc(a.name)}">
+          <span class="thumb artist">${initial(a.name)}</span>
+          <span>${esc(a.name)}<small>${esc(a.dis || "Artist")}</small></span>
+        </button>`).join("")}</div>`;
+      return head + `<div class="grid">${s.items.length
+        ? s.items.map(i => cardHTML(i, "search", i.id === current.highlight)).join("")
+        : `<div class="empty">${esc(s.empty || "Nothing here.")}</div>`}</div>`;
+    }).join("");
   }
+  function show(sections, highlight) { current = { sections, highlight }; render(); }
 
-  const sleep = ms => new Promise(r => setTimeout(r, ms));
-  let lastCall = 0, busy = false;
+  /* ---------- views ---------- */
+  let viewSeq = 0;   // a newer view cancels the loading of older ones
 
-  // MusicBrainz allows ~1 request/second and answers 503 when over it or when busy.
-  // Space requests out and retry 503s a few times with growing waits.
-  async function mbFetch(url, status) {
-    const waits = [0, 1500, 3000, 6000];
-    for (let i = 0; i < waits.length; i++) {
-      if (waits[i]) { status.textContent = `MusicBrainz is busy, retrying in ${waits[i] / 1000}s…`; await sleep(waits[i]); }
-      const gap = Date.now() - lastCall;
-      if (gap < 1100) await sleep(1100 - gap);
-      lastCall = Date.now();
-      let res;
-      try { res = await fetch(url); }
-      catch { throw new Error("Couldn't reach MusicBrainz. Check your internet connection."); }
-      if (res.status === 503 || res.status === 429) continue;
-      if (!res.ok) throw new Error("MusicBrainz error " + res.status);
-      return res.json();
-    }
-    throw new Error("MusicBrainz is still busy after several tries. Give it a minute and search again.");
-  }
-
-  async function doSearch(text) {
-    if (busy) return;
-    busy = true;
-    const status = $("#status"), box = $("#results"), btn = $("#form button");
-    btn.disabled = true;
-    box.innerHTML = "";
-    status.textContent = "Searching…";
-    const type = $("#type").value;
-    const url = "https://musicbrainz.org/ws/2/release-group/?fmt=json&limit=100&query=" +
-      encodeURIComponent(buildQuery(text, $("#by").value, type));
+  async function showResults(text) {
+    const seq = ++viewSeq, isStale = () => seq !== viewSeq;
+    closeDD();
+    setStatus(`Searching “${text}”…`);
     try {
-      const data = await mbFetch(url, status);
-      // MusicBrainz ranks only by text match, so all of an artist's releases tie.
-      // "count" = number of releases (pressings/editions/reissues) — a good popularity proxy.
-      let groups = data["release-groups"] || [];
-      if (type === "studio") groups = groups.filter(rg => !(rg["secondary-types"] || []).length);
-      groups.sort((a, b) => (b.count || 0) - (a.count || 0) || (b.score || 0) - (a.score || 0));
-      lastResults = groups.map(rg => ({
-        editions: rg.count || 0,
-        id: rg.id,
-        title: rg.title,
-        artist: (rg["artist-credit"] || []).map(a => (a.name || a.artist?.name || "") + (a.joinphrase || "")).join("").trim() || "Unknown artist",
-        year: (rg["first-release-date"] || "").slice(0, 4),
-        type: [rg["primary-type"], ...(rg["secondary-types"] || [])].filter(Boolean).join(" + "),
-      }));
-      status.textContent = lastResults.length ? `${lastResults.length} results for “${text}”` : `Nothing found for “${text}”. Try a different spelling.`;
-      renderSearch();
-    } catch (err) {
-      status.textContent = "⚠ " + (err.message || "Search failed");
-    } finally {
-      busy = false;
-      btn.disabled = false;
-    }
+      const r = await searchAll(text, { isStale, onWait: setStatus });
+      if (isStale()) return;
+      r.artists.forEach(a => artistsById.set(a.id, a));
+      remember(r.albums);
+      const artistsSec = r.artists.length ? [{ title: "Artists", artists: r.artists.slice(0, 6) }] : [];
+      const albumsSec = [{ title: "Albums", sub: "most editions first", items: r.albums, empty: `No albums found for “${text}”.` }];
+      show(r.artistsFirst ? [...artistsSec, ...albumsSec] : [...albumsSec, ...artistsSec]);
+      setStatus(`${r.albums.length} albums${r.artists.length ? ` and ${r.artists.length} artists` : ""} for “${text}”`);
+    } catch (e) { if (!(e instanceof Stale)) setStatus("⚠ " + e.message); }
   }
 
-  function renderSearch() {
-    $("#results").innerHTML = lastResults.map(r => cardHTML(r, "search")).join("");
+  async function showArtist(id, name, album) {
+    const seq = ++viewSeq, isStale = () => seq !== viewSeq, opts = { isStale, onWait: setStatus };
+    closeDD();
+    const a = artistsById.get(id) || { id, name, dis: "" };
+    const top = album ? [{ title: album.title, sub: album.artist, items: [album] }] : [];
+    const studioSec = { title: album ? `More by ${a.name}` : a.name, sub: album ? "studio albums" : (a.dis ? `${a.dis} · studio albums` : "studio albums"), items: [], empty: "Loading…" };
+    if (album) { remember([album]); studioSec.extra = ""; }
+    show([...top, studioSec], album?.id);
+    setStatus(`Loading ${a.name}'s discography…`);
+    try {
+      const studio = (await rgSearch(`arid:${id} AND primarytype:album AND NOT secondarytype:*`, opts)).map(toItem).sort(byWeight);
+      if (isStale()) return;
+      remember(studio);
+      studioSec.items = studio;
+      studioSec.empty = "No studio albums listed.";
+      const otherSec = { title: "EPs, live & compilations", items: [], empty: "Loading…" };
+      show([...top, studioSec, otherSec], album?.id);
+      const other = (await rgSearch(`arid:${id} AND (primarytype:ep OR (primarytype:album AND (secondarytype:live OR secondarytype:compilation)))`, opts))
+        .map(toItem).sort((x, y) => y.editions - x.editions);
+      if (isStale()) return;
+      remember(other);
+      otherSec.items = other;
+      otherSec.empty = "Nothing else listed.";
+      render();
+      setStatus(`${a.name}: ${studio.length} studio albums, ${other.length} other releases`);
+    } catch (e) { if (!(e instanceof Stale)) setStatus("⚠ " + e.message); }
   }
+
+  /* ---------- typeahead dropdown ---------- */
+  const input = $("#q"), dd = $("#dd");
+  let ddOpts = [], ddActive = -1, typeTimer = 0, suggestSeq = 0;
+
+  function closeDD() { dd.hidden = true; input.setAttribute("aria-expanded", "false"); ddActive = -1; suggestSeq++; clearTimeout(typeTimer); }
+  function openDD(html) { dd.innerHTML = html; dd.hidden = false; input.setAttribute("aria-expanded", "true"); }
+
+  function renderDD(r, text) {
+    ddOpts = []; ddActive = -1;
+    const artistRows = r.artists.slice(0, 4).map(a => {
+      ddOpts.push({ kind: "artist", a });
+      return `<div class="opt" role="option" data-i="${ddOpts.length - 1}">
+        <span class="thumb artist">${initial(a.name)}</span>
+        <span><div class="t">${esc(a.name)}</div><div class="s">${esc(a.dis || "Artist")}</div></span></div>`;
+    }).join("");
+    const albumRows = r.albums.slice(0, 6).map(it => {
+      ddOpts.push({ kind: "album", it });
+      return `<div class="opt" role="option" data-i="${ddOpts.length - 1}">
+        <span class="thumb"><img src="${coverUrl(it.id, 250)}" alt="" loading="lazy">💿</span>
+        <span><div class="t">${esc(it.title)}</div><div class="s">${esc([it.artist, it.year, it.studio ? "" : it.type].filter(Boolean).join(" · "))}</div></span></div>`;
+    }).join("");
+    // keep keyboard order in sync with the visual order
+    const aSec = artistRows ? `<h3>Artists</h3>${artistRows}` : "";
+    const bSec = albumRows ? `<h3>Albums</h3>${albumRows}` : "";
+    if (!r.artistsFirst) {
+      const na = Math.min(4, r.artists.length);
+      ddOpts = [...ddOpts.slice(na), ...ddOpts.slice(0, na)];
+      let k = 0;
+      const html = (bSec + aSec).replace(/data-i="\d+"/g, () => `data-i="${k++}"`);
+      openDD((html || `<div class="msg">No matches for “${esc(text)}”.</div>`) + allRow(text));
+    } else {
+      openDD((aSec + bSec || `<div class="msg">No matches for “${esc(text)}”.</div>`) + allRow(text));
+    }
+  }
+  const allRow = text => `<div class="opt" data-all="1"><span class="thumb">↵</span><span><div class="t">See all results for “${esc(text)}”</div></span></div>`;
+
+  input.addEventListener("input", () => {
+    const text = input.value.trim();
+    clearTimeout(typeTimer);
+    const seq = ++suggestSeq;
+    if (text.length < 2) { dd.hidden = true; return; }
+    typeTimer = setTimeout(async () => {
+      if (dd.hidden || !dd.querySelector(".opt")) openDD(`<div class="msg">Searching…</div>`);
+      try {
+        const r = await searchAll(text, {
+          isStale: () => seq !== suggestSeq,
+          onWait: m => { if (seq === suggestSeq) openDD(`<div class="msg">${esc(m)}</div>`); },
+        });
+        if (seq !== suggestSeq) return;
+        r.artists.forEach(a => artistsById.set(a.id, a));
+        renderDD(r, text);
+      } catch (e) {
+        if (!(e instanceof Stale) && seq === suggestSeq) openDD(`<div class="msg">⚠ ${esc(e.message)}</div>`);
+      }
+    }, 450);
+  });
+
+  function pick(i) {
+    const o = ddOpts[i];
+    if (!o) return;
+    if (o.kind === "artist") { input.value = o.a.name; showArtist(o.a.id, o.a.name); }
+    else { input.value = o.it.title; showArtist(o.it.artistId, o.it.artist, o.it); }
+  }
+  function setActive(i) {
+    const rows = [...dd.querySelectorAll(".opt[data-i]")];
+    ddActive = Math.max(-1, Math.min(rows.length - 1, i));
+    rows.forEach((el, k) => el.classList.toggle("on", k === ddActive));
+    rows[ddActive]?.scrollIntoView({ block: "nearest" });
+  }
+
+  input.addEventListener("keydown", e => {
+    if (dd.hidden) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); setActive(ddActive + 1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setActive(ddActive - 1); }
+    else if (e.key === "Escape") { closeDD(); }
+    else if (e.key === "Enter" && ddActive >= 0) { e.preventDefault(); pick(ddActive); }
+  });
+  // mousedown (not click) so it fires before the input loses focus
+  dd.addEventListener("mousedown", e => {
+    const row = e.target.closest(".opt");
+    if (!row) return;
+    e.preventDefault();
+    if (row.dataset.all) { const t = input.value.trim(); if (t) showResults(t); }
+    else pick(+row.dataset.i);
+  });
+  input.addEventListener("blur", () => setTimeout(() => { if (document.activeElement !== input) dd.hidden = true; }, 100));
+  input.addEventListener("focus", () => { if (dd.innerHTML && input.value.trim().length >= 2 && dd.querySelector(".opt")) dd.hidden = false; });
+
+  $("#form").addEventListener("submit", e => {
+    e.preventDefault();
+    const t = input.value.trim();
+    if (t) showResults(t);
+  });
 
   /* ---------- wishlist view ---------- */
   function renderList() {
@@ -284,24 +540,26 @@
       : (b.addedAt || 0) - (a.addedAt || 0));
     $("#list").innerHTML = items.length
       ? items.map(i => cardHTML(i, "list")).join("")
-      : `<div class="empty" style="grid-column:1/-1">${wishlist.length ? "Nothing in this filter." : "Your wishlist is empty — search for a record and hit “+ Wishlist”."}</div>`;
+      : `<div class="empty">${wishlist.length ? "Nothing in this filter." : "Your wishlist is empty — search for a record and hit “+ Wishlist”."}</div>`;
   }
 
-  /* ---------- events ---------- */
-  $("#form").addEventListener("submit", e => {
-    e.preventDefault();
-    const t = $("#q").value.trim();
-    if (t) doSearch(t);
-  });
-
+  /* ---------- clicks ---------- */
   document.addEventListener("click", e => {
+    const art = e.target.closest("[data-artist]");
+    if (art) {
+      showTab("search");
+      input.value = art.dataset.name;
+      showArtist(art.dataset.artist, art.dataset.name);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
     const b = e.target.closest("[data-act]");
     if (!b) return;
     const id = b.closest(".card").dataset.id;
     const act = b.dataset.act;
     if (act === "add") {
-      const r = lastResults.find(x => x.id === id);
-      if (r && !find(id)) { wishlist.push({ ...r, addedAt: Date.now(), bought: false }); save(); renderSearch(); }
+      const r = itemsById.get(id);
+      if (r && !find(id)) { wishlist.push({ ...r, addedAt: Date.now(), bought: false }); save(); render(); }
     } else if (act === "toggle") {
       const it = find(id);
       it.bought = !it.bought;
@@ -313,16 +571,16 @@
     }
   });
 
-  function show(tab) {
+  function showTab(tab) {
     $("#view-search").hidden = tab !== "search";
     $("#view-list").hidden = tab !== "list";
     $("#tab-search").classList.toggle("on", tab === "search");
     $("#tab-list").classList.toggle("on", tab === "list");
-    if (tab === "list") renderList(); else renderSearch();
-    location.hash = tab;
+    if (tab === "list") renderList(); else render();
+    history.replaceState(null, "", "#" + tab);
   }
-  $("#tab-search").onclick = () => show("search");
-  $("#tab-list").onclick = () => show("list");
+  $("#tab-search").onclick = () => showTab("search");
+  $("#tab-list").onclick = () => showTab("list");
   $("#filter").onchange = $("#sort").onchange = renderList;
 
   $("#export").onclick = () => {
@@ -351,7 +609,7 @@
   };
 
   updateCount();
-  show(location.hash === "#list" ? "list" : "search");
+  showTab(location.hash === "#list" ? "list" : "search");
 })();
 </script>
 </body>
