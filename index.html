@@ -79,7 +79,8 @@
         <option value="artist">Band / artist</option>
       </select>
       <select id="type" title="Release type">
-        <option value="album">Albums</option>
+        <option value="studio">Studio albums</option>
+        <option value="album">All albums (+ live, compilations)</option>
         <option value="ep">EPs</option>
         <option value="all">Everything</option>
       </select>
@@ -161,7 +162,7 @@
   function cardHTML(item, mode) {
     const inList = find(item.id);
     const bought = inList && inList.bought;
-    const meta = [item.year, item.type].filter(Boolean).join(" · ");
+    const meta = [item.year, item.type, item.editions > 1 ? `${item.editions} editions` : ""].filter(Boolean).join(" · ");
     let actions = "";
     if (mode === "search") {
       actions = inList
@@ -207,7 +208,7 @@
     if (by === "album") core = `releasegroup:(${t})`;
     else if (by === "artist") core = `artist:(${t})`;
     else core = `(releasegroup:(${t}) OR artist:(${t}))`;
-    if (type === "album") core += " AND primarytype:album";
+    if (type === "album" || type === "studio") core += " AND primarytype:album";
     if (type === "ep") core += " AND primarytype:ep";
     return core;
   }
@@ -241,11 +242,18 @@
     btn.disabled = true;
     box.innerHTML = "";
     status.textContent = "Searching…";
-    const url = "https://musicbrainz.org/ws/2/release-group/?fmt=json&limit=30&query=" +
-      encodeURIComponent(buildQuery(text, $("#by").value, $("#type").value));
+    const type = $("#type").value;
+    const url = "https://musicbrainz.org/ws/2/release-group/?fmt=json&limit=100&query=" +
+      encodeURIComponent(buildQuery(text, $("#by").value, type));
     try {
       const data = await mbFetch(url, status);
-      lastResults = (data["release-groups"] || []).map(rg => ({
+      // MusicBrainz ranks only by text match, so all of an artist's releases tie.
+      // "count" = number of releases (pressings/editions/reissues) — a good popularity proxy.
+      let groups = data["release-groups"] || [];
+      if (type === "studio") groups = groups.filter(rg => !(rg["secondary-types"] || []).length);
+      groups.sort((a, b) => (b.count || 0) - (a.count || 0) || (b.score || 0) - (a.score || 0));
+      lastResults = groups.map(rg => ({
+        editions: rg.count || 0,
         id: rg.id,
         title: rg.title,
         artist: (rg["artist-credit"] || []).map(a => (a.name || a.artist?.name || "") + (a.joinphrase || "")).join("").trim() || "Unknown artist",
