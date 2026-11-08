@@ -147,6 +147,7 @@
   Your list is stored in this browser (localStorage) — use Export to back it up or move it to another device.
   Data: <a href="https://musicbrainz.org" target="_blank" rel="noopener">MusicBrainz</a> ·
   <a href="https://coverartarchive.org" target="_blank" rel="noopener">Cover Art Archive</a>
+  <br><span id="version"></span>
 </footer>
 
 <script>
@@ -162,6 +163,11 @@
     { name: "Alza.cz",        url: "https://www.alza.cz/search.htm?exps={q}" },
     { name: "Discogs marketplace", url: "https://www.discogs.com/sell/list?q={q}&format=Vinyl", plain: true },
   ];
+
+  /* ---------- Version: bump on every change so you can see what's deployed ---------- */
+  const VERSION = "v6 · 2026-11-08";
+  // v1 first version · v2 retries when MusicBrainz is busy · v3 covers show · v4 popular albums first
+  // v5 search-as-you-type + artist pages · v6 tracklist roll-down + version in footer
 
   const KEY = "lp-wishlist-v1";
   const $ = s => document.querySelector(s);
@@ -608,6 +614,7 @@
     e.target.value = "";
   };
 
+  $("#version").textContent = VERSION;
   updateCount();
   showTab(location.hash === "#list" ? "list" : "search");
 })();
